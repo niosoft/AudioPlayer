@@ -59,7 +59,12 @@ public struct AudioItemURL {
 /// An `AudioItem` instance contains every piece of information needed for an `AudioPlayer` to play.
 ///
 /// URLs can be remote or local.
-open class AudioItem: NSObject {
+public class AudioItem: ObservableObject, Equatable {
+    private let id = UUID()
+    public static func == (lhs: AudioItem, rhs: AudioItem) -> Bool {
+        return lhs.id == rhs.id
+    }
+
     /// Returns the available qualities.
     public let soundURLs: [AudioQuality: URL]
 
@@ -92,7 +97,6 @@ open class AudioItem: NSObject {
     /// - Parameter soundURLs: The URLs of the sound associated with its quality wrapped in a `Dictionary`.
     public init?(soundURLs: [AudioQuality: URL]) {
         self.soundURLs = soundURLs
-        super.init()
 
         if soundURLs.isEmpty {
             return nil
@@ -102,7 +106,7 @@ open class AudioItem: NSObject {
     // MARK: Quality selection
 
     /// Returns the highest quality URL found or nil if no URLs are available
-    open var highestQualityURL: AudioItemURL {
+    public var highestQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .high, url: soundURLs[.high]) ??
             AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
@@ -110,7 +114,7 @@ open class AudioItem: NSObject {
     }
 
     /// Returns the medium quality URL found or nil if no URLs are available
-    open var mediumQualityURL: AudioItemURL {
+    public var mediumQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
             AudioItemURL(quality: .low, url: soundURLs[.low]) ??
@@ -118,7 +122,7 @@ open class AudioItem: NSObject {
     }
 
     /// Returns the lowest quality URL found or nil if no URLs are available
-    open var lowestQualityURL: AudioItemURL {
+    public var lowestQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .low, url: soundURLs[.low]) ??
             AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
@@ -144,31 +148,31 @@ open class AudioItem: NSObject {
 
     /// The artist of the item.
     ///
-    /// This can change over time which is why the property is dynamic. It enables KVO on the property.
-    @objc dynamic open var artist: String?
+    /// This can change over time which is why the property is @Published.
+    @Published public private(set) var artist: String?
 
     /// The title of the item.
     ///
-    /// This can change over time which is why the property is dynamic. It enables KVO on the property.
-    @objc dynamic open var title: String?
+    /// This can change over time which is why the property is @Published.
+    @Published public private(set) var title: String?
 
     /// The album of the item.
     ///
-    /// This can change over time which is why the property is dynamic. It enables KVO on the property.
-    @objc dynamic open var album: String?
+    /// This can change over time which is why the property is @Published.
+    @Published public private(set) var album: String?
 
     /// The track count of the item's album.
     ///
-    /// This can change over time which is why the property is dynamic. It enables KVO on the property.
-    @objc dynamic open var trackCount: NSNumber?
+    /// This can change over time which is why the property is @Published.
+    @Published public private(set) var trackCount: NSNumber?
 
     /// The track number of the item in its album.
     ///
-    /// This can change over time which is why the property is dynamic. It enables KVO on the property.
-    @objc dynamic open var trackNumber: NSNumber?
+    /// This can change over time which is why the property is @Published.
+    @Published public private(set) var trackNumber: NSNumber?
 
     /// The artwork image of the item.
-    open var artworkImage: Image? {
+    public private(set) var artworkImage: Image? {
         get {
             #if os(OSX)
                 return artwork
@@ -190,11 +194,11 @@ open class AudioItem: NSObject {
 
     /// The artwork image of the item.
     ///
-    /// This can change over time which is why the property is dynamic. It enables KVO on the property.
+    /// This can change over time which is why the property is @Published.
     #if os(OSX)
-    @objc dynamic open var artwork: Image?
+    @Published public private(set) var artwork: Image?
     #else
-    @objc dynamic open var artwork: MPMediaItemArtwork?
+    @Published public private(set) var artwork: MPMediaItemArtwork?
 
     /// The image size.
     private var imageSize: CGSize?
@@ -206,7 +210,7 @@ open class AudioItem: NSObject {
     /// for every property that is nil. Customization is available through subclassing.
     ///
     /// - Parameter items: The metadata items.
-    open func parseMetadata(_ items: [AVMetadataItem]) {
+    public func parseMetadata(_ items: [AVMetadataItem]) {
         items.forEach {
             if let commonKey = $0.commonKey {
                 switch commonKey {

@@ -15,7 +15,7 @@ import AVFoundation
 /// handle the whole playing audio process.
 ///
 /// You can get events (such as state change or time observation) by registering a delegate.
-public class AudioPlayer: NSObject {
+public class AudioPlayer {
     // MARK: Handlers
 
     /// The background handler.
@@ -325,9 +325,8 @@ public class AudioPlayer: NSObject {
     // MARK: Initialization
 
     /// Initializes a new AudioPlayer.
-    override public init() {
+    public init() {
         currentQuality = defaultQuality
-        super.init()
 
         playerEventProducer.eventListener = self
         networkEventProducer.eventListener = self
