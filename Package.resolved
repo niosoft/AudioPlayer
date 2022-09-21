@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "hyperconnectivity",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rwbutler/Hyperconnectivity",
+      "state" : {
+        "branch" : "master",
+        "revision" : "c0dbcfb6c20e59599b5cdc14f151430866322a7e"
+      }
+    }
+  ],
+  "version" : 2
+}
