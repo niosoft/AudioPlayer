@@ -14,7 +14,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "AudioPlayer",
-            targets: ["AudioPlayer"]),
+            targets: ["AudioPlayer"])
     ],
     dependencies: [
         .package(url: "https://github.com/rwbutler/Hyperconnectivity", branch: "master"),
@@ -31,6 +31,6 @@ let package = Package(
             ]),
         .testTarget(
             name: "AudioPlayerTests",
-            dependencies: ["AudioPlayer"]),
+            dependencies: ["AudioPlayer"])
     ]
 )

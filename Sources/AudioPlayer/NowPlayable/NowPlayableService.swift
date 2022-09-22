@@ -6,7 +6,6 @@
 //  Copyright © 2022 Niosoft. All rights reserved.
 //
 
-
 import Foundation
 import MediaPlayer
 
@@ -18,7 +17,6 @@ public enum NowPlayableInterruption {
 
 // An app should provide a custom implementation of the `NowPlayable` protocol for each
 // platform on which it runs.
-
 
 /**
  `NowPlayableService` defines customization points for the behavior an app

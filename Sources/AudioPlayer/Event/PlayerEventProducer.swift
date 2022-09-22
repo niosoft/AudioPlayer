@@ -117,7 +117,6 @@ class PlayerEventProducer: EventProducer {
             }
             .store(in: &cancellableBag)
 
-
         // Observing timing event
         player
             .playheadProgressPublisher(interval: 1)

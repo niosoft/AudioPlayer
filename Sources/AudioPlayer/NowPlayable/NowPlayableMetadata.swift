@@ -48,7 +48,6 @@ public struct NowPlayableDynamicMetadata {
     let availableLanguageOptionGroups: [MPNowPlayingInfoLanguageOptionGroup]
     // MPNowPlayingInfoPropertyAvailableLanguageOptions,
 
-
     public init(rate: Float, position: Float, duration: Float, currentLanguageOptions: [MPNowPlayingInfoLanguageOption], availableLanguageOptionGroups: [MPNowPlayingInfoLanguageOptionGroup]) {
         self.rate = rate
         self.position = position
