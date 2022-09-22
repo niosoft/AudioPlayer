@@ -18,7 +18,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/rwbutler/Hyperconnectivity", branch: "master"),
         .package(url: "https://github.com/jozsef-vesza/AVFoundation-Combine", branch: "master"),
     ],
     targets: [
@@ -27,7 +26,6 @@ let package = Package(
         .target(
             name: "AudioPlayer",
             dependencies: [
-                "Hyperconnectivity",
                 .product(name: "AVFoundationCombine", package: "AVFoundation-Combine"),
             ]
         ),
