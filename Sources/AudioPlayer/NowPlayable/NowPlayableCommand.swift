@@ -14,11 +14,8 @@ import MediaPlayer
  */
 public enum NowPlayableCommand: CaseIterable {
     case pause, play, stop, togglePausePlay
-    case nextTrack, previousTrack, changeRepeatMode, changeShuffleMode
-    case changePlaybackRate, seekBackward, seekForward, skipBackward, skipForward, changePlaybackPosition
-    case rating, like, dislike
-    case bookmark
-    case enableLanguageOption, disableLanguageOption
+    case nextTrack, previousTrack, changeRepeatMode
+    case changePlaybackRate, seekBackward, seekForward, skipBackward, skipForward
 
     // The underlying `MPRemoteCommandCenter` command for this `NowPlayable` command.
     var remoteCommand: MPRemoteCommand {
@@ -40,8 +37,6 @@ public enum NowPlayableCommand: CaseIterable {
             return remoteCommandCenter.previousTrackCommand
         case .changeRepeatMode:
             return remoteCommandCenter.changeRepeatModeCommand
-        case .changeShuffleMode:
-            return remoteCommandCenter.changeShuffleModeCommand
         case .changePlaybackRate:
             return remoteCommandCenter.changePlaybackRateCommand
         case .seekBackward:
@@ -52,20 +47,6 @@ public enum NowPlayableCommand: CaseIterable {
             return remoteCommandCenter.skipBackwardCommand
         case .skipForward:
             return remoteCommandCenter.skipForwardCommand
-        case .changePlaybackPosition:
-            return remoteCommandCenter.changePlaybackPositionCommand
-        case .rating:
-            return remoteCommandCenter.ratingCommand
-        case .like:
-            return remoteCommandCenter.likeCommand
-        case .dislike:
-            return remoteCommandCenter.dislikeCommand
-        case .bookmark:
-            return remoteCommandCenter.bookmarkCommand
-        case .enableLanguageOption:
-            return remoteCommandCenter.enableLanguageOptionCommand
-        case .disableLanguageOption:
-            return remoteCommandCenter.disableLanguageOptionCommand
         }
     }
 
@@ -76,15 +57,6 @@ public enum NowPlayableCommand: CaseIterable {
 
     // Install a handler for this command.
     func addHandler(_ handler: @escaping (NowPlayableCommand, MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus) {
-        switch self {
-        case .skipBackward:
-            MPRemoteCommandCenter.shared().skipBackwardCommand.preferredIntervals = [15.0]
-        case .skipForward:
-            MPRemoteCommandCenter.shared().skipForwardCommand.preferredIntervals = [15.0]
-        default:
-            break
-        }
-
         remoteCommand.addTarget { handler(self, $0) }
     }
 

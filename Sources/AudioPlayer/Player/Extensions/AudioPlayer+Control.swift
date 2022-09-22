@@ -6,7 +6,8 @@
 //  Copyright © 2022 Niosoft. All rights reserved.
 //
 
-import CoreMedia
+import AVFoundation
+import MediaPlayer
 #if os(iOS) || os(tvOS)
 import UIKit
 #endif
@@ -134,6 +135,21 @@ extension AudioPlayer {
         }
     }
 
+    public func togglePlayPause() {
+        switch state {
+        case .stopped:
+            resume()
+
+        case .playing:
+            pause()
+
+        case .paused:
+            resume()
+        default:
+            break
+        }
+    }
+
     /// Seeks backwards as far as possible.
     ///
     /// - Parameter padding: The padding to apply if any.
@@ -162,42 +178,60 @@ extension AudioPlayer {
         seekSafely(to: position, completionHandler: completionHandler)
     }
 
-#if os(iOS) || os(tvOS)
-    // swiftlint:disable cyclomatic_complexity
-    /// Handle events received from Control Center/Lock screen/Other in UIApplicationDelegate.
-    ///
-    /// - Parameter event: The event received.
-    public func remoteControlReceived(with event: UIEvent) {
-        guard event.type == .remoteControl else {
-            return
-        }
-
-        switch event.subtype {
-        case .remoteControlBeginSeekingBackward:
-            seekingBehavior.handleSeekingStart(player: self, forward: false)
-        case .remoteControlBeginSeekingForward:
-            seekingBehavior.handleSeekingStart(player: self, forward: true)
-        case .remoteControlEndSeekingBackward:
-            seekingBehavior.handleSeekingEnd(player: self, forward: false)
-        case .remoteControlEndSeekingForward:
-            seekingBehavior.handleSeekingEnd(player: self, forward: true)
-        case .remoteControlNextTrack:
-            next()
-        case .remoteControlPause,
-                .remoteControlTogglePlayPause where state.isPlaying:
-            pause()
-        case .remoteControlPlay,
-                .remoteControlTogglePlayPause where state.isPaused:
-            resume()
-        case .remoteControlPreviousTrack:
-            previous()
-        case .remoteControlStop:
+    func handleCommand(command: NowPlayableCommand, event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        switch command {
+        case .pause:
+            if state == .playing {
+                pause()
+            }
+        case .play:
+            if state == .paused {
+                resume()
+            }
+        case .stop:
             stop()
-        default:
-            break
+        case .togglePausePlay:
+            togglePlayPause()
+        case .nextTrack:
+            next()
+        case .previousTrack:
+            previous()
+        case .changeRepeatMode:
+            guard let event = event as? MPChangeRepeatModeCommandEvent else { return .commandFailed }
+            switch event.repeatType {
+            case .off:
+                mode = .normal
+            case .one:
+                mode = .repeat
+            case .all:
+                mode = .repeatAll
+            @unknown default:
+                break
+            }
+        case .changePlaybackRate:
+            guard let event = event as? MPChangePlaybackRateCommandEvent else { return .commandFailed }
+            rate = event.playbackRate
+        case .seekBackward:
+            guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
+            if event.type == .beginSeeking {
+                seekingBehavior.handleSeekingStart(player: self, forward: false)
+            } else if event.type == .endSeeking {
+                seekingBehavior.handleSeekingEnd(player: self, forward: false)
+            }
+        case .seekForward:
+            guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
+            if event.type == .beginSeeking {
+                seekingBehavior.handleSeekingStart(player: self, forward: true)
+            } else if event.type == .endSeeking {
+                seekingBehavior.handleSeekingEnd(player: self, forward: true)
+            }
+        case .skipBackward:
+            MPRemoteCommandCenter.shared().skipBackwardCommand.preferredIntervals = [15.0]
+        case .skipForward:
+            MPRemoteCommandCenter.shared().skipForwardCommand.preferredIntervals = [15.0]
         }
+        return .success
     }
-#endif
 }
 
 extension AudioPlayer {

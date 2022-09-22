@@ -346,21 +346,6 @@ public class AudioPlayer {
         try? nowPlayableService.handleNowPlayableConfiguration(commandHandler: handleCommand(command:event:))
 	}
 
-    private func handleCommand(command: NowPlayableCommand, event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        switch command {
-        case .pause:
-            pause()
-
-        case .play:
-            resume()
-        default:
-           return .success
-        }
-
-        return .success
-
-    }
-
     /// Deinitializes the AudioPlayer. On deinit, the player will simply stop playing anything it was previously
     /// playing.
     deinit {
