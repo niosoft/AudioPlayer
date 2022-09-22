@@ -9,13 +9,13 @@
 import AVFoundation
 import MediaPlayer
 #if os(iOS) || os(tvOS)
-import UIKit
+    import UIKit
 
-public typealias Image = UIImage
+    public typealias Image = UIImage
 #else
-import Cocoa
+    import Cocoa
 
-public typealias Image = NSImage
+    public typealias Image = NSImage
 #endif
 
 // MARK: - AudioQuality
@@ -78,7 +78,8 @@ public class AudioItem: ObservableObject, Equatable {
     ///   - lowQualitySoundURL: The URL for the low quality sound.
     public convenience init?(highQualitySoundURL: URL? = nil,
                              mediumQualitySoundURL: URL? = nil,
-                             lowQualitySoundURL: URL? = nil) {
+                             lowQualitySoundURL: URL? = nil)
+    {
         var URLs = [AudioQuality: URL]()
         if let highURL = highQualitySoundURL {
             URLs[.high] = highURL
@@ -109,24 +110,24 @@ public class AudioItem: ObservableObject, Equatable {
     public var highestQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .high, url: soundURLs[.high]) ??
-                AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
-                AudioItemURL(quality: .low, url: soundURLs[.low]))!
+            AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
+            AudioItemURL(quality: .low, url: soundURLs[.low]))!
     }
 
     /// Returns the medium quality URL found or nil if no URLs are available
     public var mediumQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
-                AudioItemURL(quality: .low, url: soundURLs[.low]) ??
-                AudioItemURL(quality: .high, url: soundURLs[.high]))!
+            AudioItemURL(quality: .low, url: soundURLs[.low]) ??
+            AudioItemURL(quality: .high, url: soundURLs[.high]))!
     }
 
     /// Returns the lowest quality URL found or nil if no URLs are available
     public var lowestQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .low, url: soundURLs[.low]) ??
-                AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
-                AudioItemURL(quality: .high, url: soundURLs[.high]))!
+            AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
+            AudioItemURL(quality: .high, url: soundURLs[.high]))!
     }
 
     /// Returns an URL that best fits a given quality.
@@ -179,7 +180,7 @@ public class AudioItem: ObservableObject, Equatable {
         set {
             imageSize = newValue?.size
             artwork = newValue.map { image in
-                return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+                MPMediaItemArtwork(boundsSize: image.size) { _ in image }
             }
         }
     }

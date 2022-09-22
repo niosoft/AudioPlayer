@@ -6,8 +6,8 @@
 //  Copyright © 2022 Niosoft. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 @propertyWrapper
 public class DidSet<Value> {
@@ -28,7 +28,5 @@ public class DidSet<Value> {
         get { val }
     }
 
-    public var projectedValue: CurrentValueSubject<Value, Never> {
-        get { subject }
-    }
+    public var projectedValue: CurrentValueSubject<Value, Never> { subject }
 }

@@ -73,35 +73,35 @@ class PlayerEventProducer: EventProducer {
 
         // Observing notifications sent through `NSNotificationCenter`
         let center = NotificationCenter.default
-#if os(iOS) || os(tvOS)
-        center
-            .publisher(for: AVAudioSession.interruptionNotification)
-            .sink {[weak self] notification in
-                self?.audioSessionGotInterrupted(notification: notification)
-            }
-            .store(in: &cancellableBag)
+        #if os(iOS) || os(tvOS)
+            center
+                .publisher(for: AVAudioSession.interruptionNotification)
+                .sink { [weak self] notification in
+                    self?.audioSessionGotInterrupted(notification: notification)
+                }
+                .store(in: &cancellableBag)
 
-        center
-            .publisher(for: AVAudioSession.routeChangeNotification)
-            .sink { [weak self] notification in
-                self?.audioSessionRouteChanged(notification: notification)
-            }
-            .store(in: &cancellableBag)
+            center
+                .publisher(for: AVAudioSession.routeChangeNotification)
+                .sink { [weak self] notification in
+                    self?.audioSessionRouteChanged(notification: notification)
+                }
+                .store(in: &cancellableBag)
 
-        center
-            .publisher(for: AVAudioSession.mediaServicesWereLostNotification)
-            .sink { [weak self] notification in
-                self?.audioSessionMessedUp(notification: notification)
-            }
-            .store(in: &cancellableBag)
+            center
+                .publisher(for: AVAudioSession.mediaServicesWereLostNotification)
+                .sink { [weak self] notification in
+                    self?.audioSessionMessedUp(notification: notification)
+                }
+                .store(in: &cancellableBag)
 
-        center
-            .publisher(for: AVAudioSession.mediaServicesWereResetNotification)
-            .sink { [weak self] notification in
-                self?.audioSessionMessedUp(notification: notification)
-            }
-            .store(in: &cancellableBag)
-#endif
+            center
+                .publisher(for: AVAudioSession.mediaServicesWereResetNotification)
+                .sink { [weak self] notification in
+                    self?.audioSessionMessedUp(notification: notification)
+                }
+                .store(in: &cancellableBag)
+        #endif
         center
             .publisher(for: .AVPlayerItemDidPlayToEndTime)
             .sink { [weak self] notification in
@@ -111,7 +111,7 @@ class PlayerEventProducer: EventProducer {
 
         player
             .currentItemPublisher()
-            .sink {[weak self] item in
+            .sink { [weak self] item in
                 guard let item else { return }
                 self?.registerItemObservers(item)
             }
@@ -120,7 +120,7 @@ class PlayerEventProducer: EventProducer {
         // Observing timing event
         player
             .playheadProgressPublisher(interval: 1)
-            .sink {[weak self] interval in
+            .sink { [weak self] interval in
                 guard let self else { return }
 
                 let time = CMTime(seconds: interval, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
@@ -135,36 +135,36 @@ class PlayerEventProducer: EventProducer {
         item
             .isPlaybackBufferEmptyPublisher()
             .dropFirst()
-            .sink {[weak self] isPlaybackBufferEmpty in
+            .sink { [weak self] isPlaybackBufferEmpty in
                 guard let self, isPlaybackBufferEmpty else { return }
                 self.eventListener?.onEvent(PlayerEvent.startedBuffering, generetedBy: self)
             }
-            .store(in: &self.cancellableBag)
+            .store(in: &cancellableBag)
 
         item
             .isPlaybackLikelyToKeepUpPublisher()
             .dropFirst()
-            .sink {[weak self] isPlaybackLikelyToKeepUp in
+            .sink { [weak self] isPlaybackLikelyToKeepUp in
                 guard let self, isPlaybackLikelyToKeepUp else { return }
                 self.eventListener?.onEvent(PlayerEvent.readyToPlay, generetedBy: self)
             }
-            .store(in: &self.cancellableBag)
+            .store(in: &cancellableBag)
 
         item
             .durationPublisher()
             .dropFirst()
-            .sink {[weak self] duration in
+            .sink { [weak self] duration in
                 guard let self else { return }
                 self.eventListener?.onEvent(PlayerEvent.loadedDuration(duration: duration), generetedBy: self)
 
                 self.eventListener?.onEvent(PlayerEvent.loadedMetadata(metadata: item.asset.commonMetadata), generetedBy: self)
             }
-            .store(in: &self.cancellableBag)
+            .store(in: &cancellableBag)
 
         item
             .statusPublisher()
             .dropFirst()
-            .sink {[weak self] status in
+            .sink { [weak self] status in
                 guard let self else { return }
 
                 if status == .failed {
@@ -173,31 +173,31 @@ class PlayerEventProducer: EventProducer {
                     self.eventListener?.onEvent(PlayerEvent.readyToPlay, generetedBy: self)
                 }
             }
-            .store(in: &self.cancellableBag)
+            .store(in: &cancellableBag)
 
         item
             .loadedTimeRangesPublisher()
             .dropFirst()
-            .sink {[weak self] loadedTimeRanges in
+            .sink { [weak self] loadedTimeRanges in
                 guard let self else { return }
 
                 if let range = loadedTimeRanges.last?.timeRangeValue {
                     self.eventListener?.onEvent(PlayerEvent.loadedMoreRange(earliest: range.start, latest: range.end), generetedBy: self)
                 }
             }
-            .store(in: &self.cancellableBag)
+            .store(in: &cancellableBag)
 
         item
             .timedMetadataPublisher()
             .dropFirst()
-            .sink {[weak self] timedMetadata in
+            .sink { [weak self] timedMetadata in
                 guard let self else { return }
 
                 if let metadata = timedMetadata {
                     self.eventListener?.onEvent(PlayerEvent.loadedMetadata(metadata: metadata), generetedBy: self)
                 }
             }
-            .store(in: &self.cancellableBag)
+            .store(in: &cancellableBag)
     }
 
     /// Stops listening to the player events.
@@ -207,34 +207,34 @@ class PlayerEventProducer: EventProducer {
         listening = false
     }
 
-#if os(iOS) || os(tvOS)
-    /// Audio session got interrupted by the system (call, Siri, ...). If interruption begins, we should ensure the
-    /// audio pauses and if it ends, we should restart playing if state was `.playing` before.
-    ///
-    /// - Parameter note: The notification information.
-    fileprivate func audioSessionGotInterrupted(notification: Notification) {
-        if let userInfo = notification.userInfo, let type = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
-           let interruption = AVAudioSession.InterruptionType(rawValue: type) {
-
-            if interruption == .began {
-                eventListener?.onEvent(PlayerEvent.interruptionBegan, generetedBy: self)
-            } else {
-                if let type = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
-                    let options = AVAudioSession.InterruptionOptions(rawValue: type)
-                    eventListener?.onEvent(
-                        PlayerEvent.interruptionEnded(shouldResume: options.contains(.shouldResume)),
-                        generetedBy: self
-                    )
+    #if os(iOS) || os(tvOS)
+        /// Audio session got interrupted by the system (call, Siri, ...). If interruption begins, we should ensure the
+        /// audio pauses and if it ends, we should restart playing if state was `.playing` before.
+        ///
+        /// - Parameter note: The notification information.
+        fileprivate func audioSessionGotInterrupted(notification: Notification) {
+            if let userInfo = notification.userInfo, let type = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+               let interruption = AVAudioSession.InterruptionType(rawValue: type)
+            {
+                if interruption == .began {
+                    eventListener?.onEvent(PlayerEvent.interruptionBegan, generetedBy: self)
+                } else {
+                    if let type = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
+                        let options = AVAudioSession.InterruptionOptions(rawValue: type)
+                        eventListener?.onEvent(
+                            PlayerEvent.interruptionEnded(shouldResume: options.contains(.shouldResume)),
+                            generetedBy: self
+                        )
+                    }
                 }
             }
         }
-    }
-#endif
+    #endif
 
     /// Audio session route changed (ex: earbuds plugged in/out). This can change the player state, so we just adapt it.
     ///
     /// - Parameter note: The notification information.
-    fileprivate func audioSessionRouteChanged(notification: Notification) {
+    fileprivate func audioSessionRouteChanged(notification _: Notification) {
         eventListener?.onEvent(PlayerEvent.routeChanged, generetedBy: self)
     }
 
@@ -242,14 +242,14 @@ class PlayerEventProducer: EventProducer {
     /// player.
     ///
     /// - Parameter note: The notification information.
-    fileprivate func audioSessionMessedUp(notification: Notification) {
+    fileprivate func audioSessionMessedUp(notification _: Notification) {
         eventListener?.onEvent(PlayerEvent.sessionMessedUp, generetedBy: self)
     }
 
     /// Playing item did end. We can play next or stop the player if queue is empty.
     ///
     /// - Parameter note: The notification information.
-    fileprivate func playerItemDidEnd(notification: Notification) {
+    fileprivate func playerItemDidEnd(notification _: Notification) {
         eventListener?.onEvent(PlayerEvent.endedPlaying(error: nil), generetedBy: self)
     }
 }

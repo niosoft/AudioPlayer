@@ -6,31 +6,31 @@
 //  Copyright © 2022 Niosoft. All rights reserved.
 //
 
-extension AudioPlayer {
+public extension AudioPlayer {
     /// The items in the queue if any.
-    public var items: [AudioItem]? {
+    var items: [AudioItem]? {
         return queue?.queue
     }
 
     /// The current item index in queue.
-    public var currentItemIndexInQueue: Int? {
+    var currentItemIndexInQueue: Int? {
         return currentItem.flatMap { queue?.items.firstIndex(of: $0) }
     }
 
     /// A boolean value indicating whether there is a next item to play or not.
-    public var hasNext: Bool {
+    var hasNext: Bool {
         return queue?.hasNextItem ?? false
     }
 
     /// A boolean value indicating whether there is a previous item to play or not.
-    public var hasPrevious: Bool {
+    var hasPrevious: Bool {
         return queue?.hasPreviousItem ?? false
     }
 
     /// Plays an item.
     ///
     /// - Parameter item: The item to play.
-    public func play(item: AudioItem) {
+    func play(item: AudioItem) {
         play(items: [item])
     }
 
@@ -39,7 +39,7 @@ extension AudioPlayer {
     /// - Parameters:
     ///   - items: The items to play.
     ///   - index: The index to start the player with.
-    public func play(items: [AudioItem], startAtIndex index: Int = 0) {
+    func play(items: [AudioItem], startAtIndex index: Int = 0) {
         if !items.isEmpty {
             queue = AudioItemQueue(items: items, mode: mode)
             queue?.delegate = self
@@ -57,7 +57,7 @@ extension AudioPlayer {
     /// to `play(item:)`.
     ///
     /// - Parameter item: The item to add.
-    public func add(item: AudioItem) {
+    func add(item: AudioItem) {
         add(items: [item])
     }
 
@@ -65,7 +65,7 @@ extension AudioPlayer {
     /// similar to `play(items:)`.
     ///
     /// - Parameter items: The items to add.
-    public func add(items: [AudioItem]) {
+    func add(items: [AudioItem]) {
         if let queue = queue {
             queue.add(items: items)
         } else {
@@ -76,7 +76,7 @@ extension AudioPlayer {
     /// Removes an item at a specific index in the queue.
     ///
     /// - Parameter index: The index of the item to remove.
-    public func removeItem(at index: Int) {
+    func removeItem(at index: Int) {
         queue?.remove(at: index)
     }
 }
@@ -88,7 +88,7 @@ extension AudioPlayer: AudioItemQueueDelegate {
     ///   - queue: The queue.
     ///   - item: The item we ask the information for.
     /// - Returns: A boolean value indicating whether an item should be consider playable in the queue.
-    func audioItemQueue(_ queue: AudioItemQueue, shouldConsiderItem item: AudioItem) -> Bool {
+    func audioItemQueue(_: AudioItemQueue, shouldConsiderItem item: AudioItem) -> Bool {
         return delegate?.audioPlayer(self, shouldStartPlaying: item) ?? true
     }
 }

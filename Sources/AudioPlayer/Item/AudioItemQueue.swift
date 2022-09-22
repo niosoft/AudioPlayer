@@ -23,7 +23,7 @@ private extension Array {
 
 // MARK: - AudioItemQueueDelegate
 
-/// `AudioItemQueueDelegate` defines the behavior of `AudioItem` in certain circumstances and is notified upon notable 
+/// `AudioItemQueueDelegate` defines the behavior of `AudioItem` in certain circumstances and is notified upon notable
 /// events.
 protocol AudioItemQueueDelegate: AnyObject {
     /// Returns a boolean value indicating whether an item should be consider playable in the queue.
@@ -92,22 +92,22 @@ class AudioItemQueue {
             return
         }
 
-        if !oldMode.contains(.repeatAll) && mode.contains(.repeatAll) {
+        if !oldMode.contains(.repeatAll), mode.contains(.repeatAll) {
             nextPosition = nextPosition % queue.count
         }
 
-        if oldMode.contains(.repeat) && !mode.contains(.repeat) && historic.last == queue[nextPosition] {
+        if oldMode.contains(.repeat), !mode.contains(.repeat), historic.last == queue[nextPosition] {
             nextPosition += 1
-        } else if !oldMode.contains(.repeat) && mode.contains(.repeat) && nextPosition == queue.count {
+        } else if !oldMode.contains(.repeat), mode.contains(.repeat), nextPosition == queue.count {
             nextPosition -= 1
         }
 
-        if oldMode.contains(.shuffle) && !mode.contains(.shuffle) {
+        if oldMode.contains(.shuffle), !mode.contains(.shuffle) {
             queue = items
             if let last = historic.last, let index = queue.firstIndex(of: last) {
                 nextPosition = index + 1
             }
-        } else if mode.contains(.shuffle) && !oldMode.contains(.shuffle) {
+        } else if mode.contains(.shuffle), !oldMode.contains(.shuffle) {
             let alreadyPlayed = queue.prefix(upTo: nextPosition)
             let leftovers = queue.suffix(from: nextPosition)
             queue = Array(alreadyPlayed).ap_shuffled() + Array(leftovers).ap_shuffled()
@@ -130,7 +130,7 @@ class AudioItemQueue {
             return item
         }
 
-        if mode.contains(.repeatAll) && nextPosition >= queue.count {
+        if mode.contains(.repeatAll), nextPosition >= queue.count {
             nextPosition = 0
         }
 
@@ -144,7 +144,7 @@ class AudioItemQueue {
             }
         }
 
-        if mode.contains(.repeatAll) && nextPosition >= queue.count {
+        if mode.contains(.repeatAll), nextPosition >= queue.count {
             nextPosition = 0
         }
         return nil
@@ -152,8 +152,9 @@ class AudioItemQueue {
 
     /// A boolean value indicating whether the queue has a next item to play or not.
     var hasNextItem: Bool {
-        if !queue.isEmpty &&
-            (queue.count > nextPosition || mode.contains(.repeat) || mode.contains(.repeatAll)) {
+        if !queue.isEmpty,
+           queue.count > nextPosition || mode.contains(.repeat) || mode.contains(.repeatAll)
+        {
             return true
         }
         return false
@@ -175,7 +176,7 @@ class AudioItemQueue {
             return item
         }
 
-        if mode.contains(.repeatAll) && nextPosition <= 0 {
+        if mode.contains(.repeatAll), nextPosition <= 0 {
             nextPosition = queue.count
         }
 
@@ -190,7 +191,7 @@ class AudioItemQueue {
             }
         }
 
-        if mode.contains(.repeatAll) && nextPosition <= 0 {
+        if mode.contains(.repeatAll), nextPosition <= 0 {
             nextPosition = queue.count
         }
         return nil
@@ -198,8 +199,9 @@ class AudioItemQueue {
 
     /// A boolean value indicating whether the queue has a previous item to play or not.
     var hasPreviousItem: Bool {
-        if !queue.isEmpty &&
-            (nextPosition > 0 || mode.contains(.repeat) || mode.contains(.repeatAll)) {
+        if !queue.isEmpty,
+           nextPosition > 0 || mode.contains(.repeat) || mode.contains(.repeatAll)
+        {
             return true
         }
         return false
@@ -210,7 +212,7 @@ class AudioItemQueue {
     /// - Parameter items: The items to add to the queue.
     func add(items: [AudioItem]) {
         self.items.append(contentsOf: items)
-        self.queue.append(contentsOf: items)
+        queue.append(contentsOf: items)
     }
 
     /// Removes an item from the queue.

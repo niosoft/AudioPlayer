@@ -1,6 +1,4 @@
-import XCTest
 @testable import AudioPlayer
+import XCTest
 
-final class AudioPlayerTests: XCTestCase {
-
-}
+final class AudioPlayerTests: XCTestCase {}

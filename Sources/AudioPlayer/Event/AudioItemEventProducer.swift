@@ -6,8 +6,8 @@
 //  Copyright © 2022 Niosoft. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 // MARK: - PlayerEventProducer
 
@@ -59,12 +59,12 @@ class AudioItemEventProducer: EventProducer {
         }
 
         // Observe AudioItem properties
-        item.$artist.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedArtist, generetedBy: self)}.store(in: &cancellableBag)
-        item.$title.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedTitle, generetedBy: self)}.store(in: &cancellableBag)
-        item.$album.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedAlbum, generetedBy: self)}.store(in: &cancellableBag)
-        item.$trackCount.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedTrackCount, generetedBy: self)}.store(in: &cancellableBag)
-        item.$trackNumber.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedTrackNumber, generetedBy: self)}.store(in: &cancellableBag)
-        item.$artwork.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedArtwork, generetedBy: self)}.store(in: &cancellableBag)
+        item.$artist.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedArtist, generetedBy: self) }.store(in: &cancellableBag)
+        item.$title.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedTitle, generetedBy: self) }.store(in: &cancellableBag)
+        item.$album.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedAlbum, generetedBy: self) }.store(in: &cancellableBag)
+        item.$trackCount.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedTrackCount, generetedBy: self) }.store(in: &cancellableBag)
+        item.$trackNumber.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedTrackNumber, generetedBy: self) }.store(in: &cancellableBag)
+        item.$artwork.dropFirst().sink { _ in self.eventListener?.onEvent(AudioItemEvent.updatedArtwork, generetedBy: self) }.store(in: &cancellableBag)
 
         listening = true
     }

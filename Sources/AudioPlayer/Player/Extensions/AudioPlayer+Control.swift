@@ -9,12 +9,12 @@
 import AVFoundation
 import MediaPlayer
 #if os(iOS) || os(tvOS)
-import UIKit
+    import UIKit
 #endif
 
-extension AudioPlayer {
+public extension AudioPlayer {
     /// Resumes the player.
-    public func resume() {
+    func resume() {
         // Ensure pause flag is no longer set
         pausedForInterruption = false
 
@@ -22,7 +22,7 @@ extension AudioPlayer {
 
         // We don't wan't to change the state to Playing in case it's Buffering. That
         // would be a lie.
-        if !state.isPlaying && !state.isBuffering {
+        if !state.isPlaying, !state.isBuffering {
             state = .playing
         }
 
@@ -30,7 +30,7 @@ extension AudioPlayer {
     }
 
     /// Pauses the player.
-    public func pause() {
+    func pause() {
         // We ensure the player actually pauses
         player?.rate = 0
         state = .paused
@@ -44,7 +44,7 @@ extension AudioPlayer {
     }
 
     /// Starts playing the current item immediately. Works on iOS/tvOS 10+ and macOS 10.12+
-    func playImmediately() {
+    internal func playImmediately() {
         if #available(iOS 10.0, tvOS 10.0, OSX 10.12, *) {
             self.state = .playing
             player?.playImmediately(atRate: rate)
@@ -55,7 +55,7 @@ extension AudioPlayer {
     }
 
     /// Plays previous item in the queue or rewind current item.
-    public func previous() {
+    func previous() {
         if let previousItem = queue?.previousItem() {
             currentItem = previousItem
         } else {
@@ -64,14 +64,14 @@ extension AudioPlayer {
     }
 
     /// Plays next item in the queue.
-    public func next() {
+    func next() {
         if let nextItem = queue?.nextItem() {
             currentItem = nextItem
         }
     }
 
     /// Plays the next item in the queue and if there isn't, the player will stop.
-    public func nextOrStop() {
+    func nextOrStop() {
         if let nextItem = queue?.nextItem() {
             currentItem = nextItem
         } else {
@@ -80,7 +80,7 @@ extension AudioPlayer {
     }
 
     /// Stops the player and clear the queue.
-    public func stop() {
+    func stop() {
         retryEventProducer.stopProducingEvents()
 
         if let _ = player {
@@ -108,13 +108,15 @@ extension AudioPlayer {
     ///   - toleranceAfter: The tolerance allowed after time.
     ///   - completionHandler: The optional callback that gets executed upon completion with a boolean param indicating
     ///         if the operation has finished.
-    public func seek(to time: TimeInterval,
-                     byAdaptingTimeToFitSeekableRanges: Bool = false,
-                     toleranceBefore: CMTime = CMTime.positiveInfinity,
-                     toleranceAfter: CMTime = CMTime.positiveInfinity,
-                     completionHandler: ((Bool) -> Void)? = nil) {
+    func seek(to time: TimeInterval,
+              byAdaptingTimeToFitSeekableRanges: Bool = false,
+              toleranceBefore: CMTime = CMTime.positiveInfinity,
+              toleranceAfter: CMTime = CMTime.positiveInfinity,
+              completionHandler: ((Bool) -> Void)? = nil)
+    {
         guard let earliest = currentItemSeekableRange?.earliest,
-              let latest = currentItemSeekableRange?.latest else {
+              let latest = currentItemSeekableRange?.latest
+        else {
             // In case we don't have a valid `seekableRange`, although this *shouldn't* happen
             // let's just call `AVPlayer.seek(to:)` with given values.
             seekSafely(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter,
@@ -135,7 +137,7 @@ extension AudioPlayer {
         }
     }
 
-    public func togglePlayPause() {
+    func togglePlayPause() {
         switch state {
         case .stopped:
             resume()
@@ -155,7 +157,7 @@ extension AudioPlayer {
     /// - Parameter padding: The padding to apply if any.
     /// - completionHandler: The optional callback that gets executed upon completion with a boolean param indicating
     ///     if the operation has finished.
-    public func seekToSeekableRangeStart(padding: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
+    func seekToSeekableRangeStart(padding: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
         guard let range = currentItemSeekableRange else {
             completionHandler?(false)
             return
@@ -169,7 +171,7 @@ extension AudioPlayer {
     /// - Parameter padding: The padding to apply if any.
     /// - completionHandler: The optional callback that gets executed upon completion with a boolean param indicating
     ///     if the operation has finished.
-    public func seekToSeekableRangeEnd(padding: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
+    func seekToSeekableRangeEnd(padding: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
         guard let range = currentItemSeekableRange else {
             completionHandler?(false)
             return
@@ -178,7 +180,7 @@ extension AudioPlayer {
         seekSafely(to: position, completionHandler: completionHandler)
     }
 
-    func handleCommand(command: NowPlayableCommand, event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+    internal func handleCommand(command: NowPlayableCommand, event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         switch command {
         case .pause:
             if state == .playing {
@@ -234,12 +236,12 @@ extension AudioPlayer {
     }
 }
 
-extension AudioPlayer {
-
-    fileprivate func seekSafely(to time: TimeInterval,
-                                toleranceBefore: CMTime = CMTime.positiveInfinity,
-                                toleranceAfter: CMTime = CMTime.positiveInfinity,
-                                completionHandler: ((Bool) -> Void)?) {
+private extension AudioPlayer {
+    func seekSafely(to time: TimeInterval,
+                    toleranceBefore: CMTime = CMTime.positiveInfinity,
+                    toleranceAfter: CMTime = CMTime.positiveInfinity,
+                    completionHandler: ((Bool) -> Void)?)
+    {
         guard let completionHandler = completionHandler else {
             player?.seek(to: CMTime(timeInterval: time), toleranceBefore: toleranceBefore,
                          toleranceAfter: toleranceAfter)
@@ -254,10 +256,10 @@ extension AudioPlayer {
         }
         player?.seek(to: CMTime(timeInterval: time), toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter,
                      completionHandler: { [weak self] finished in
-            completionHandler(finished)
-            if let metadata = self?.currentItemDynamicMetadata() {
-                self?.nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: self?.state == .playing, metadata: metadata)
-            }
-        })
+                         completionHandler(finished)
+                         if let metadata = self?.currentItemDynamicMetadata() {
+                             self?.nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: self?.state == .playing, metadata: metadata)
+                         }
+                     })
     }
 }

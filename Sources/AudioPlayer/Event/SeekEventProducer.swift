@@ -68,7 +68,7 @@ class SeekEventProducer: EventProducer {
     /// Stops the current timer if any and restart a new one.
     private func restartTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: intervalBetweenEvents, repeats: true, block: {[weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: intervalBetweenEvents, repeats: true, block: { [weak self] _ in
             self?.timerHandler()
         })
     }

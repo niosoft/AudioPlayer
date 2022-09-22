@@ -75,7 +75,7 @@ class RetryEventProducer: EventProducer {
     /// Stops the current timer if any and restart a new one.
     private func restartTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: retryTimeout, repeats: true, block: {[weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: retryTimeout, repeats: true, block: { [weak self] _ in
             self?.timerHandler()
         })
     }

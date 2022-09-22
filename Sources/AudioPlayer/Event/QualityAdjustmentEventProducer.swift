@@ -55,7 +55,7 @@ class QualityAdjustmentEventProducer: EventProducer {
                     timerHandler()
                 } else {
                     // In this case, the timer fire date just needs to be adjusted.
-                    self.timer = Timer.scheduledTimer(withTimeInterval: adjustQualityTimeInternal, repeats: false, block: {[weak self] _ in
+                    self.timer = Timer.scheduledTimer(withTimeInterval: adjustQualityTimeInternal, repeats: false, block: { [weak self] _ in
                         self?.timerHandler()
                     })
                 }
@@ -107,7 +107,7 @@ class QualityAdjustmentEventProducer: EventProducer {
         interruptionCount = 0
 
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: adjustQualityTimeInternal, repeats: false, block: {[weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: adjustQualityTimeInternal, repeats: false, block: { [weak self] _ in
             self?.timerHandler()
         })
     }
@@ -115,7 +115,7 @@ class QualityAdjustmentEventProducer: EventProducer {
     /// Checks that the interruption count is lower than `adjustQualityAfterInterruptionCount`. If it isn't, the
     /// function generates an event and reset its state.
     private func checkInterruptionCount() {
-        if interruptionCount >= adjustQualityAfterInterruptionCount && listening {
+        if interruptionCount >= adjustQualityAfterInterruptionCount, listening {
             // Now we need to stop the timer
             timer?.invalidate()
 

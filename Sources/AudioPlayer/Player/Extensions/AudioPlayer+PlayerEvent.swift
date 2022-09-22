@@ -14,9 +14,9 @@ extension AudioPlayer {
     /// - Parameters:
     ///   - producer: The event producer that generated the player event.
     ///   - event: The player event.
-    func handlePlayerEvent(from producer: EventProducer, with event: PlayerEventProducer.PlayerEvent) {
+    func handlePlayerEvent(from _: EventProducer, with event: PlayerEventProducer.PlayerEvent) {
         switch event {
-        case .endedPlaying(let error):
+        case let .endedPlaying(error):
             if let error = error {
                 state = .failed(.foundationError(error))
             } else {
@@ -29,14 +29,14 @@ extension AudioPlayer {
             pausedForInterruption = true
             pause()
 
-        case .interruptionEnded(let shouldResume) where pausedForInterruption:
-            if resumeAfterInterruption && shouldResume {
+        case let .interruptionEnded(shouldResume) where pausedForInterruption:
+            if resumeAfterInterruption, shouldResume {
                 resume()
             }
             pausedForInterruption = false
             backgroundHandler.endBackgroundTask()
 
-        case .loadedDuration(let time):
+        case let .loadedDuration(time):
             if let currentItem = currentItem, let time = time.ap_timeIntervalValue {
                 if let metadata = currentItemDynamicMetadata() {
                     nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing, metadata: metadata)
@@ -44,7 +44,7 @@ extension AudioPlayer {
                 delegate?.audioPlayer(self, didFindDuration: time, for: currentItem)
             }
 
-        case .loadedMetadata(let metadata):
+        case let .loadedMetadata(metadata):
             if let currentItem = currentItem, !metadata.isEmpty {
                 currentItem.parseMetadata(metadata)
                 delegate?.audioPlayer(self, didUpdateEmptyMetadataOn: currentItem, withData: metadata)
@@ -54,17 +54,19 @@ extension AudioPlayer {
             if let currentItem = currentItem, let currentItemLoadedRange = currentItemLoadedRange {
                 delegate?.audioPlayer(self, didLoad: currentItemLoadedRange, for: currentItem)
 
-                if bufferingStrategy == .playWhenPreferredBufferDurationFull && state == .buffering,
-                    let currentItemLoadedAhead = currentItemLoadedAhead,
-                    currentItemLoadedAhead.isNormal,
-                    currentItemLoadedAhead >= self.preferredBufferDurationBeforePlayback {
-                        playImmediately()
+                if bufferingStrategy == .playWhenPreferredBufferDurationFull, state == .buffering,
+                   let currentItemLoadedAhead = currentItemLoadedAhead,
+                   currentItemLoadedAhead.isNormal,
+                   currentItemLoadedAhead >= preferredBufferDurationBeforePlayback
+                {
+                    playImmediately()
                 }
             }
 
-        case .progressed(let time):
+        case let .progressed(time):
             if let currentItemProgression = time.ap_timeIntervalValue, let item = player?.currentItem,
-                item.status == .readyToPlay {
+               item.status == .readyToPlay
+            {
                 // This fixes the behavior where sometimes the `playbackLikelyToKeepUp` isn't
                 // changed even though it's playing (happens mostly at the first play though).
                 if state.isBuffering || state.isPaused {

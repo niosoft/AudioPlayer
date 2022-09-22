@@ -22,7 +22,6 @@ public enum NowPlayableCommand: CaseIterable {
         let remoteCommandCenter = MPRemoteCommandCenter.shared()
 
         switch self {
-
         case .pause:
             return remoteCommandCenter.pauseCommand
         case .play:

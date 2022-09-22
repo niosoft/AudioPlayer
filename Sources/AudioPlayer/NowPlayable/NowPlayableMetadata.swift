@@ -13,18 +13,18 @@ import MediaPlayer
  `NowPlayableStaticMetadata` contains static properties of a playable item that don't depend on the state of the player for their value.
  */
 public struct NowPlayableStaticMetadata {
-    public let assetURL: URL                   // MPNowPlayingInfoPropertyAssetURL
+    public let assetURL: URL // MPNowPlayingInfoPropertyAssetURL
     public let mediaType: MPNowPlayingInfoMediaType
     // MPNowPlayingInfoPropertyMediaType
-    public let isLiveStream: Bool              // MPNowPlayingInfoPropertyIsLiveStream
+    public let isLiveStream: Bool // MPNowPlayingInfoPropertyIsLiveStream
 
-    public let title: String?                   // MPMediaItemPropertyTitle
-    public let artist: String?                 // MPMediaItemPropertyArtist
-    public let artwork: MPMediaItemArtwork?    // MPMediaItemPropertyArtwork
+    public let title: String? // MPMediaItemPropertyTitle
+    public let artist: String? // MPMediaItemPropertyArtist
+    public let artwork: MPMediaItemArtwork? // MPMediaItemPropertyArtwork
 
-    public let album: String?            // MPMediaItemPropertyAlbumTitle
-    public let trackCount: NSNumber?             // MPMediaItemPropertyAlbumTrackCount
-    public let trackNumber: NSNumber?             // MPMediaItemPropertyAlbumTrackNumber
+    public let album: String? // MPMediaItemPropertyAlbumTitle
+    public let trackCount: NSNumber? // MPMediaItemPropertyAlbumTrackCount
+    public let trackNumber: NSNumber? // MPMediaItemPropertyAlbumTrackNumber
 
     public init(assetURL: URL, mediaType: MPNowPlayingInfoMediaType, isLiveStream: Bool, title: String? = nil, artist: String? = nil, artwork: MPMediaItemArtwork? = nil, album: String? = nil, trackCount: NSNumber? = nil, trackNumber: NSNumber? = nil) {
         self.assetURL = assetURL
@@ -40,9 +40,9 @@ public struct NowPlayableStaticMetadata {
 }
 
 public struct NowPlayableDynamicMetadata {
-    public let rate: Float                     // MPNowPlayingInfoPropertyPlaybackRate
-    public let position: Float                 // MPNowPlayingInfoPropertyElapsedPlaybackTime
-    public let duration: Float                 // MPMediaItemPropertyPlaybackDuration
+    public let rate: Float // MPNowPlayingInfoPropertyPlaybackRate
+    public let position: Float // MPNowPlayingInfoPropertyElapsedPlaybackTime
+    public let duration: Float // MPMediaItemPropertyPlaybackDuration
     let currentLanguageOptions: [MPNowPlayingInfoLanguageOption]
     // MPNowPlayingInfoPropertyCurrentLanguageOptions
     let availableLanguageOptionGroups: [MPNowPlayingInfoLanguageOptionGroup]

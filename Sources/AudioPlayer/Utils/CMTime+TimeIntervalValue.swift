@@ -13,7 +13,7 @@ extension CMTime {
     ///
     /// - Parameter timeInterval: The time in seconds.
     init(timeInterval: TimeInterval) {
-        self.init(seconds: timeInterval, preferredTimescale: 1000000000)
+        self.init(seconds: timeInterval, preferredTimescale: 1_000_000_000)
     }
 
     // swiftlint:disable variable_name

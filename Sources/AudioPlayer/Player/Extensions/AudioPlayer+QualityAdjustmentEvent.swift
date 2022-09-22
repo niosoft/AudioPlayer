@@ -14,8 +14,9 @@ extension AudioPlayer {
     /// - Parameters:
     ///   - producer: The event producer that generated the quality adjustment event.
     ///   - event: The quality adjustment event.
-    func handleQualityEvent(from producer: EventProducer,
-                            with event: QualityAdjustmentEventProducer.QualityAdjustmentEvent) {
+    func handleQualityEvent(from _: EventProducer,
+                            with event: QualityAdjustmentEventProducer.QualityAdjustmentEvent)
+    {
         // Early exit if user doesn't want to adjust quality
         guard adjustQualityAutomatically else {
             return
@@ -46,7 +47,7 @@ extension AudioPlayer {
 
         let cip = currentItemProgression
         let item = AVPlayerItem(url: url)
-        self.updatePlayerItemForBufferingStrategy(item)
+        updatePlayerItemForBufferingStrategy(item)
 
         qualityIsBeingChanged = true
         player?.replaceCurrentItem(with: item)

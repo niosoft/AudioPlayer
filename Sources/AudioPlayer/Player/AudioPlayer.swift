@@ -31,7 +31,7 @@ public class AudioPlayer {
     let seekEventProducer = SeekEventProducer()
 
     /// The NowPlayable service.
-	var nowPlayableService: NowPlayableService?
+    var nowPlayableService: NowPlayableService?
 
     /// The quality adjustment event producer.
     var qualityAdjustmentEventProducer = QualityAdjustmentEventProducer()
@@ -75,9 +75,9 @@ public class AudioPlayer {
         }
     }
 
-	public var avPlayer: AVPlayer? {
-		return player
-	}
+    public var avPlayer: AVPlayer? {
+        return player
+    }
 
     /// The current item being played.
     public var currentItem: AudioItem? {
@@ -248,7 +248,7 @@ public class AudioPlayer {
 
         func handleSeekingStart(player: AudioPlayer, forward: Bool) {
             switch self {
-            case .multiplyRate(let rateMultiplier):
+            case let .multiplyRate(rateMultiplier):
                 if forward {
                     player.rate *= rateMultiplier
                 } else {
@@ -263,7 +263,7 @@ public class AudioPlayer {
 
         func handleSeekingEnd(player: AudioPlayer, forward: Bool) {
             switch self {
-            case .multiplyRate(let rateMultiplier):
+            case let .multiplyRate(rateMultiplier):
                 if forward {
                     player.rate /= rateMultiplier
                 } else {
@@ -280,7 +280,7 @@ public class AudioPlayer {
     /// is `multiplyRate(2)`.
     public var seekingBehavior = SeekingBehavior.multiplyRate(2) {
         didSet {
-            if case .changeTime(let timerInterval, _) = seekingBehavior {
+            if case let .changeTime(timerInterval, _) = seekingBehavior {
                 seekEventProducer.intervalBetweenEvents = timerInterval
             }
         }
@@ -291,7 +291,6 @@ public class AudioPlayer {
     /// The current state of the player.
     public internal(set) var state = AudioPlayerState.stopped {
         didSet {
-
             if state != oldValue {
                 if case .buffering = state {
                     backgroundHandler.beginBackgroundTask()
@@ -340,11 +339,11 @@ public class AudioPlayer {
         qualityAdjustmentEventProducer.eventListener = self
     }
 
-	public convenience init(nowPlayableService: NowPlayableService) {
-		self.init()
-		self.nowPlayableService = nowPlayableService
+    public convenience init(nowPlayableService: NowPlayableService) {
+        self.init()
+        self.nowPlayableService = nowPlayableService
         try? nowPlayableService.handleNowPlayableConfiguration(commandHandler: handleCommand(command:event:))
-	}
+    }
 
     /// Deinitializes the AudioPlayer. On deinit, the player will simply stop playing anything it was previously
     /// playing.
@@ -358,18 +357,18 @@ public class AudioPlayer {
     ///
     /// - Parameter active: A boolean value indicating whether the audio session should be set to active or not.
     func setAudioSession(active: Bool) {
-		DispatchQueue.global().async {[weak self] in
-			#if os(iOS) || os(tvOS)
-				_ = try? AVAudioSession.sharedInstance().setCategory(.playback)
-				_ = try? AVAudioSession.sharedInstance().setActive(active)
-			#endif
+        DispatchQueue.global().async { [weak self] in
+            #if os(iOS) || os(tvOS)
+                _ = try? AVAudioSession.sharedInstance().setCategory(.playback)
+                _ = try? AVAudioSession.sharedInstance().setActive(active)
+            #endif
 
-			if active {
-				try? self?.nowPlayableService?.handleNowPlayableSessionStart()
-			} else {
-				self?.nowPlayableService?.handleNowPlayableSessionEnd()
-			}
-		}
+            if active {
+                try? self?.nowPlayableService?.handleNowPlayableSessionStart()
+            } else {
+                self?.nowPlayableService?.handleNowPlayableSessionEnd()
+            }
+        }
     }
 
     // MARK: Public computed properties

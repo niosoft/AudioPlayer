@@ -75,26 +75,20 @@ public protocol AudioPlayerDelegate: AnyObject {
 }
 
 public extension AudioPlayerDelegate {
-    func audioPlayer(_ audioPlayer: AudioPlayer, didChangeStateFrom from: AudioPlayerState,
-                     to state: AudioPlayerState) {
-    }
+    func audioPlayer(_: AudioPlayer, didChangeStateFrom _: AudioPlayerState,
+                     to _: AudioPlayerState) {}
 
-    func audioPlayer(_ audioPlayer: AudioPlayer, shouldStartPlaying item: AudioItem) -> Bool {
+    func audioPlayer(_: AudioPlayer, shouldStartPlaying _: AudioItem) -> Bool {
         return true
     }
 
-    func audioPlayer(_ audioPlayer: AudioPlayer, willStartPlaying item: AudioItem) {
-    }
+    func audioPlayer(_: AudioPlayer, willStartPlaying _: AudioItem) {}
 
-    func audioPlayer(_ audioPlayer: AudioPlayer, didUpdateProgressionTo time: TimeInterval, percentageRead: Float) {
-    }
+    func audioPlayer(_: AudioPlayer, didUpdateProgressionTo _: TimeInterval, percentageRead _: Float) {}
 
-    func audioPlayer(_ audioPlayer: AudioPlayer, didFindDuration duration: TimeInterval, for item: AudioItem) {
-    }
+    func audioPlayer(_: AudioPlayer, didFindDuration _: TimeInterval, for _: AudioItem) {}
 
-    func audioPlayer(_ audioPlayer: AudioPlayer, didUpdateEmptyMetadataOn item: AudioItem, withData data: Metadata) {
-    }
+    func audioPlayer(_: AudioPlayer, didUpdateEmptyMetadataOn _: AudioItem, withData _: Metadata) {}
 
-    func audioPlayer(_ audioPlayer: AudioPlayer, didLoad range: TimeRange, for item: AudioItem) {
-    }
+    func audioPlayer(_: AudioPlayer, didLoad _: TimeRange, for _: AudioItem) {}
 }

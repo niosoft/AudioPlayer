@@ -87,7 +87,7 @@ public enum AudioPlayerState {
 
     /// The error if self = `failed`.
     var error: AudioPlayerError? {
-        if case .failed(let error) = self {
+        if case let .failed(error) = self {
             return error
         }
         return nil
@@ -101,7 +101,8 @@ extension AudioPlayerState: Equatable {}
 public func == (lhs: AudioPlayerState, rhs: AudioPlayerState) -> Bool {
     if (lhs.isBuffering && rhs.isBuffering) || (lhs.isPlaying && rhs.isPlaying) ||
         (lhs.isPaused && rhs.isPaused) || (lhs.isStopped && rhs.isStopped) ||
-        (lhs.isWaitingForConnection && rhs.isWaitingForConnection) {
+        (lhs.isWaitingForConnection && rhs.isWaitingForConnection)
+    {
         return true
     }
     if let e1 = lhs.error, let e2 = rhs.error {

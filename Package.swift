@@ -8,17 +8,18 @@ let package = Package(
     platforms: [
         .iOS(.v13),
         .tvOS(.v13),
-        .macOS(.v10_15)
+        .macOS(.v10_15),
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "AudioPlayer",
-            targets: ["AudioPlayer"])
+            targets: ["AudioPlayer"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/rwbutler/Hyperconnectivity", branch: "master"),
-        .package(url: "https://github.com/jozsef-vesza/AVFoundation-Combine", branch: "master")
+        .package(url: "https://github.com/jozsef-vesza/AVFoundation-Combine", branch: "master"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -27,10 +28,12 @@ let package = Package(
             name: "AudioPlayer",
             dependencies: [
                 "Hyperconnectivity",
-                .product(name: "AVFoundationCombine", package: "AVFoundation-Combine")
-            ]),
+                .product(name: "AVFoundationCombine", package: "AVFoundation-Combine"),
+            ]
+        ),
         .testTarget(
             name: "AudioPlayerTests",
-            dependencies: ["AudioPlayer"])
+            dependencies: ["AudioPlayer"]
+        ),
     ]
 )
