@@ -58,7 +58,7 @@ class PlayerEventProducer: EventProducer {
     private var listening = false
 
     /// The registered subscriptions
-    private var subscriptions = Set<AnyCancellable>()
+    private var cancellableBag = Set<AnyCancellable>()
 
     /// Stops producing events on deinitialization.
     deinit {
@@ -79,35 +79,35 @@ class PlayerEventProducer: EventProducer {
             .sink {[weak self] notification in
                 self?.audioSessionGotInterrupted(notification: notification)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 
         center
             .publisher(for: AVAudioSession.routeChangeNotification)
             .sink { [weak self] notification in
                 self?.audioSessionRouteChanged(notification: notification)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 
         center
             .publisher(for: AVAudioSession.mediaServicesWereLostNotification)
             .sink { [weak self] notification in
                 self?.audioSessionMessedUp(notification: notification)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 
         center
             .publisher(for: AVAudioSession.mediaServicesWereResetNotification)
             .sink { [weak self] notification in
                 self?.audioSessionMessedUp(notification: notification)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 #endif
         center
             .publisher(for: .AVPlayerItemDidPlayToEndTime)
             .sink { [weak self] notification in
                 self?.playerItemDidEnd(notification: notification)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 
         player
             .currentItemPublisher()
@@ -115,7 +115,7 @@ class PlayerEventProducer: EventProducer {
                 guard let item else { return }
                 self?.registerItemObservers(item)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 
 
         // Observing timing event
@@ -127,7 +127,7 @@ class PlayerEventProducer: EventProducer {
                 let time = CMTime(seconds: interval, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
                 self.eventListener?.onEvent(PlayerEvent.progressed(time: time), generetedBy: self)
             }
-            .store(in: &subscriptions)
+            .store(in: &cancellableBag)
 
         listening = true
     }
@@ -140,7 +140,7 @@ class PlayerEventProducer: EventProducer {
                 guard let self, isPlaybackBufferEmpty else { return }
                 self.eventListener?.onEvent(PlayerEvent.startedBuffering, generetedBy: self)
             }
-            .store(in: &self.subscriptions)
+            .store(in: &self.cancellableBag)
 
         item
             .isPlaybackLikelyToKeepUpPublisher()
@@ -149,7 +149,7 @@ class PlayerEventProducer: EventProducer {
                 guard let self, isPlaybackLikelyToKeepUp else { return }
                 self.eventListener?.onEvent(PlayerEvent.readyToPlay, generetedBy: self)
             }
-            .store(in: &self.subscriptions)
+            .store(in: &self.cancellableBag)
 
         item
             .durationPublisher()
@@ -160,7 +160,7 @@ class PlayerEventProducer: EventProducer {
 
                 self.eventListener?.onEvent(PlayerEvent.loadedMetadata(metadata: item.asset.commonMetadata), generetedBy: self)
             }
-            .store(in: &self.subscriptions)
+            .store(in: &self.cancellableBag)
 
         item
             .statusPublisher()
@@ -174,7 +174,7 @@ class PlayerEventProducer: EventProducer {
                     self.eventListener?.onEvent(PlayerEvent.readyToPlay, generetedBy: self)
                 }
             }
-            .store(in: &self.subscriptions)
+            .store(in: &self.cancellableBag)
 
         item
             .loadedTimeRangesPublisher()
@@ -186,7 +186,7 @@ class PlayerEventProducer: EventProducer {
                     self.eventListener?.onEvent(PlayerEvent.loadedMoreRange(earliest: range.start, latest: range.end), generetedBy: self)
                 }
             }
-            .store(in: &self.subscriptions)
+            .store(in: &self.cancellableBag)
 
         item
             .timedMetadataPublisher()
@@ -198,12 +198,12 @@ class PlayerEventProducer: EventProducer {
                     self.eventListener?.onEvent(PlayerEvent.loadedMetadata(metadata: metadata), generetedBy: self)
                 }
             }
-            .store(in: &self.subscriptions)
+            .store(in: &self.cancellableBag)
     }
 
     /// Stops listening to the player events.
     func stopProducingEvents() {
-        subscriptions.removeAll()
+        cancellableBag.removeAll()
 
         listening = false
     }
@@ -214,7 +214,7 @@ class PlayerEventProducer: EventProducer {
     ///
     /// - Parameter note: The notification information.
     fileprivate func audioSessionGotInterrupted(notification: Notification) {
-        if let userInfo = note.userInfo, let type = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+        if let userInfo = notification.userInfo, let type = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
            let interruption = AVAudioSession.InterruptionType(rawValue: type) {
 
             if interruption == .began {

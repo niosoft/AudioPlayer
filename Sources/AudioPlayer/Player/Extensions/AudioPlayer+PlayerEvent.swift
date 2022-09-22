@@ -38,7 +38,9 @@ extension AudioPlayer {
 
         case .loadedDuration(let time):
             if let currentItem = currentItem, let time = time.ap_timeIntervalValue {
-                updateNowPlayingInfoCenter()
+                if let metadata = currentItemDynamicMetadata() {
+                    nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing, metadata: metadata)
+                }
                 delegate?.audioPlayer(self, didFindDuration: time, for: currentItem)
             }
 

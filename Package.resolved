@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "avfoundation-combine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jozsef-vesza/AVFoundation-Combine",
+      "state" : {
+        "branch" : "master",
+        "revision" : "543df269c7c97bcb92978998998c033cd6ef1803"
+      }
+    },
+    {
       "identity" : "hyperconnectivity",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rwbutler/Hyperconnectivity",

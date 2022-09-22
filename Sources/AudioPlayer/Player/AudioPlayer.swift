@@ -7,9 +7,7 @@
 //
 
 import AVFoundation
-#if os(iOS) || os(tvOS)
-    import MediaPlayer
-#endif
+import MediaPlayer
 
 /// An `AudioPlayer` instance is used to play `AudioPlayerItem`. It's an easy to use AVPlayer with simple methods to
 /// handle the whole playing audio process.
@@ -32,7 +30,8 @@ public class AudioPlayer {
     /// The seek event producer.
     let seekEventProducer = SeekEventProducer()
 
-	var nowPlayableBehavior: NowPlayable?
+    /// The NowPlayable service.
+	var nowPlayableService: NowPlayableService?
 
     /// The quality adjustment event producer.
     var qualityAdjustmentEventProducer = QualityAdjustmentEventProducer()
@@ -69,7 +68,7 @@ public class AudioPlayer {
                 playerEventProducer.player = nil
                 audioItemEventProducer.item = nil
                 playerEventProducer.stopProducingEvents()
-//                networkEventProducer.stopProducingEvents()
+                networkEventProducer.stopProducingEvents()
                 audioItemEventProducer.stopProducingEvents()
                 qualityAdjustmentEventProducer.stopProducingEvents()
             }
@@ -117,9 +116,6 @@ public class AudioPlayer {
                 player = AVPlayer(playerItem: playerItem)
 
                 currentQuality = info.quality
-
-                // Updates information on the lock screen
-                updateNowPlayingInfoCenter()
 
                 // Calls delegate
                 if oldValue != currentItem {
@@ -196,6 +192,9 @@ public class AudioPlayer {
     /// Defines whether the player should resume after a connection loss or not. Default value is `true`.
     public var resumeAfterConnectionLoss = true
 
+    /// Defines whether the player should set the now playing metadata or not. Default value is `true`.
+    public var setNowPlayingMetadata = true
+
     /// Defines the mode of the player. Default is `.Normal`.
     public var mode = AudioPlayerMode.normal {
         didSet {
@@ -215,7 +214,11 @@ public class AudioPlayer {
         didSet {
             if case .playing = state {
                 player?.rate = rate
-                updateNowPlayingInfoCenter()
+                if let metadata = currentItemDynamicMetadata() {
+                    nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing, metadata: metadata)
+                } else {
+                    nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing)
+                }
             }
         }
     }
@@ -288,7 +291,6 @@ public class AudioPlayer {
     /// The current state of the player.
     public internal(set) var state = AudioPlayerState.stopped {
         didSet {
-            updateNowPlayingInfoCenter()
 
             if state != oldValue {
                 if case .buffering = state {
@@ -297,7 +299,11 @@ public class AudioPlayer {
                     backgroundHandler.endBackgroundTask()
                 }
 
-				nowPlayableBehavior?.handleNowPlayablePlaybackChange(playing: state == .playing)
+                if let metadata = currentItemDynamicMetadata() {
+                    nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing, metadata: metadata)
+                } else {
+                    nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing)
+                }
 
                 delegate?.audioPlayer(self, didChangeStateFrom: oldValue, to: state)
             }
@@ -334,11 +340,26 @@ public class AudioPlayer {
         qualityAdjustmentEventProducer.eventListener = self
     }
 
-	public convenience init(nowPlayableBehavior: NowPlayable) {
+	public convenience init(nowPlayableService: NowPlayableService) {
 		self.init()
-		self.nowPlayableBehavior = nowPlayableBehavior
-		try? nowPlayableBehavior.handleNowPlayableConfiguration(audioPlayer: self)
+		self.nowPlayableService = nowPlayableService
+        try? nowPlayableService.handleNowPlayableConfiguration(commandHandler: handleCommand(command:event:))
 	}
+
+    private func handleCommand(command: NowPlayableCommand, event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        switch command {
+        case .pause:
+            pause()
+
+        case .play:
+            resume()
+        default:
+           return .success
+        }
+
+        return .success
+
+    }
 
     /// Deinitializes the AudioPlayer. On deinit, the player will simply stop playing anything it was previously
     /// playing.
@@ -348,35 +369,20 @@ public class AudioPlayer {
 
     // MARK: Utility methods
 
-    /// Updates the MPNowPlayingInfoCenter with current item's info.
-    func updateNowPlayingInfoCenter() {
-        #if os(iOS) || os(tvOS)
-//            if let item = currentItem {
-//                MPNowPlayingInfoCenter.default().ap_update(
-//                    with: item,
-//                    duration: currentItemDuration,
-//                    progression: currentItemProgression,
-//                    playbackRate: player?.rate ?? 0)
-//            } else {
-//                MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
-//            }
-        #endif
-    }
-
     /// Enables or disables the `AVAudioSession` and sets the right category.
     ///
     /// - Parameter active: A boolean value indicating whether the audio session should be set to active or not.
     func setAudioSession(active: Bool) {
 		DispatchQueue.global().async {[weak self] in
 			#if os(iOS) || os(tvOS)
-				_ = try? AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback)
+				_ = try? AVAudioSession.sharedInstance().setCategory(.playback)
 				_ = try? AVAudioSession.sharedInstance().setActive(active)
 			#endif
 
 			if active {
-				try? self?.nowPlayableBehavior?.handleNowPlayableSessionStart()
+				try? self?.nowPlayableService?.handleNowPlayableSessionStart()
 			} else {
-				self?.nowPlayableBehavior?.handleNowPlayableSessionEnd()
+				self?.nowPlayableService?.handleNowPlayableSessionEnd()
 			}
 		}
     }
@@ -449,5 +455,15 @@ extension AudioPlayer: EventListener {
         } else if let event = event as? SeekEventProducer.SeekEvent {
             handleSeekEvent(from: eventProducer, with: event)
         }
+    }
+
+    func currentItemDynamicMetadata() -> NowPlayableDynamicMetadata? {
+        if let player, let currentItemDuration, let currentItemProgression {
+            return NowPlayableDynamicMetadata(rate: player.rate,
+                                              position: Float(currentItemProgression),
+                                              duration: Float(currentItemDuration),
+                                              currentLanguageOptions: [.init()], availableLanguageOptionGroups: [.init()])
+        }
+        return nil
     }
 }

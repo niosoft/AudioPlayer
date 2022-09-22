@@ -8,7 +8,7 @@
 
 import CoreMedia
 #if os(iOS) || os(tvOS)
-    import UIKit
+import UIKit
 #endif
 
 extension AudioPlayer {
@@ -113,18 +113,18 @@ extension AudioPlayer {
                      toleranceAfter: CMTime = CMTime.positiveInfinity,
                      completionHandler: ((Bool) -> Void)? = nil) {
         guard let earliest = currentItemSeekableRange?.earliest,
-            let latest = currentItemSeekableRange?.latest else {
-                // In case we don't have a valid `seekableRange`, although this *shouldn't* happen
-                // let's just call `AVPlayer.seek(to:)` with given values.
-                seekSafely(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter,
-                           completionHandler: completionHandler)
-                return
+              let latest = currentItemSeekableRange?.latest else {
+            // In case we don't have a valid `seekableRange`, although this *shouldn't* happen
+            // let's just call `AVPlayer.seek(to:)` with given values.
+            seekSafely(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter,
+                       completionHandler: completionHandler)
+            return
         }
 
         if !byAdaptingTimeToFitSeekableRanges || (time >= earliest && time <= latest) {
             // Time is in seekable range, there's no problem here.
             seekSafely(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter,
-                 completionHandler: completionHandler)
+                       completionHandler: completionHandler)
         } else if time < earliest {
             // Time is before seekable start, so just move to the most early position as possible.
             seekToSeekableRangeStart(padding: 1, completionHandler: completionHandler)
@@ -141,8 +141,8 @@ extension AudioPlayer {
     ///     if the operation has finished.
     public func seekToSeekableRangeStart(padding: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
         guard let range = currentItemSeekableRange else {
-                completionHandler?(false)
-                return
+            completionHandler?(false)
+            return
         }
         let position = min(range.latest, range.earliest + padding)
         seekSafely(to: position, completionHandler: completionHandler)
@@ -155,14 +155,14 @@ extension AudioPlayer {
     ///     if the operation has finished.
     public func seekToSeekableRangeEnd(padding: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
         guard let range = currentItemSeekableRange else {
-                completionHandler?(false)
-                return
+            completionHandler?(false)
+            return
         }
         let position = max(range.earliest, range.latest - padding)
         seekSafely(to: position, completionHandler: completionHandler)
     }
 
-    #if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS)
     // swiftlint:disable cyclomatic_complexity
     /// Handle events received from Control Center/Lock screen/Other in UIApplicationDelegate.
     ///
@@ -184,10 +184,10 @@ extension AudioPlayer {
         case .remoteControlNextTrack:
             next()
         case .remoteControlPause,
-             .remoteControlTogglePlayPause where state.isPlaying:
+                .remoteControlTogglePlayPause where state.isPlaying:
             pause()
         case .remoteControlPlay,
-             .remoteControlTogglePlayPause where state.isPaused:
+                .remoteControlTogglePlayPause where state.isPaused:
             resume()
         case .remoteControlPreviousTrack:
             previous()
@@ -197,7 +197,7 @@ extension AudioPlayer {
             break
         }
     }
-    #endif
+#endif
 }
 
 extension AudioPlayer {
@@ -209,7 +209,9 @@ extension AudioPlayer {
         guard let completionHandler = completionHandler else {
             player?.seek(to: CMTime(timeInterval: time), toleranceBefore: toleranceBefore,
                          toleranceAfter: toleranceAfter)
-            updateNowPlayingInfoCenter()
+            if let metadata = currentItemDynamicMetadata() {
+                nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: state == .playing, metadata: metadata)
+            }
             return
         }
         guard player?.currentItem?.status == .readyToPlay else {
@@ -218,8 +220,10 @@ extension AudioPlayer {
         }
         player?.seek(to: CMTime(timeInterval: time), toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter,
                      completionHandler: { [weak self] finished in
-                        completionHandler(finished)
-                        self?.updateNowPlayingInfoCenter()
+            completionHandler(finished)
+            if let metadata = self?.currentItemDynamicMetadata() {
+                self?.nowPlayableService?.handleNowPlayablePlaybackChange(isPlaying: self?.state == .playing, metadata: metadata)
+            }
         })
     }
 }

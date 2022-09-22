@@ -7,15 +7,15 @@
 //
 
 import AVFoundation
+import MediaPlayer
 #if os(iOS) || os(tvOS)
-    import MediaPlayer
-    import UIKit
+import UIKit
 
-    public typealias Image = UIImage
+public typealias Image = UIImage
 #else
-    import Cocoa
+import Cocoa
 
-    public typealias Image = NSImage
+public typealias Image = NSImage
 #endif
 
 // MARK: - AudioQuality
@@ -109,24 +109,24 @@ public class AudioItem: ObservableObject, Equatable {
     public var highestQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .high, url: soundURLs[.high]) ??
-            AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
-            AudioItemURL(quality: .low, url: soundURLs[.low]))!
+                AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
+                AudioItemURL(quality: .low, url: soundURLs[.low]))!
     }
 
     /// Returns the medium quality URL found or nil if no URLs are available
     public var mediumQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
-            AudioItemURL(quality: .low, url: soundURLs[.low]) ??
-            AudioItemURL(quality: .high, url: soundURLs[.high]))!
+                AudioItemURL(quality: .low, url: soundURLs[.low]) ??
+                AudioItemURL(quality: .high, url: soundURLs[.high]))!
     }
 
     /// Returns the lowest quality URL found or nil if no URLs are available
     public var lowestQualityURL: AudioItemURL {
         // swiftlint:disable force_unwrapping
         return (AudioItemURL(quality: .low, url: soundURLs[.low]) ??
-            AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
-            AudioItemURL(quality: .high, url: soundURLs[.high]))!
+                AudioItemURL(quality: .medium, url: soundURLs[.medium]) ??
+                AudioItemURL(quality: .high, url: soundURLs[.high]))!
     }
 
     /// Returns an URL that best fits a given quality.
@@ -149,60 +149,48 @@ public class AudioItem: ObservableObject, Equatable {
     /// The artist of the item.
     ///
     /// This can change over time which is why the property is @Published.
-    @Published public private(set) var artist: String?
+    @DidSet public private(set) var artist: String?
 
     /// The title of the item.
     ///
     /// This can change over time which is why the property is @Published.
-    @Published public private(set) var title: String?
+    @DidSet public private(set) var title: String?
 
     /// The album of the item.
     ///
     /// This can change over time which is why the property is @Published.
-    @Published public private(set) var album: String?
+    @DidSet public private(set) var album: String?
 
     /// The track count of the item's album.
     ///
     /// This can change over time which is why the property is @Published.
-    @Published public private(set) var trackCount: NSNumber?
+    @DidSet public private(set) var trackCount: NSNumber?
 
     /// The track number of the item in its album.
     ///
     /// This can change over time which is why the property is @Published.
-    @Published public private(set) var trackNumber: NSNumber?
+    @DidSet public private(set) var trackNumber: NSNumber?
 
     /// The artwork image of the item.
     public private(set) var artworkImage: Image? {
         get {
-            #if os(OSX)
-                return artwork
-            #else
-                return artwork?.image(at: imageSize ?? CGSize(width: 512, height: 512))
-            #endif
+            return artwork?.image(at: imageSize ?? CGSize(width: 512, height: 512))
         }
         set {
-            #if os(OSX)
-                artwork = newValue
-            #else
-                imageSize = newValue?.size
-                artwork = newValue.map { image in
-                    return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
-                }
-            #endif
+            imageSize = newValue?.size
+            artwork = newValue.map { image in
+                return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+            }
         }
     }
 
     /// The artwork image of the item.
     ///
     /// This can change over time which is why the property is @Published.
-    #if os(OSX)
-    @Published public private(set) var artwork: Image?
-    #else
-    @Published public private(set) var artwork: MPMediaItemArtwork?
+    @DidSet public private(set) var artwork: MPMediaItemArtwork?
 
     /// The image size.
     private var imageSize: CGSize?
-    #endif
 
     // MARK: Metadata
 
